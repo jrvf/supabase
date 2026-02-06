@@ -1,0 +1,10 @@
+services:
+  studio:
+    environment:
+      # Overrides the default or .env specific SUPABASE_PUBLIC_URL with Coolify's generated FQDN
+      SUPABASE_PUBLIC_URL: ${SERVICE_FQDN_KONG}
+
+  auth:
+    environment:
+      # Overrides the external URL for redirects to match the Coolify generated FQDN
+      API_EXTERNAL_URL: ${SERVICE_FQDN_KONG}

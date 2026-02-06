@@ -1,0 +1,350 @@
+{
+  "minVersion": "4.0.0",
+  "questions": [
+    {
+      "label": "JWT Secret",
+      "name": "JWT_SECRET",
+      "defaultValue": "Aygz5seTGY0WpTyomg9y9fXjQCAP3EtQ7z+xZq1p",
+      "required": true,
+      "type": "password",
+      "description": "Secret used to sign JWT tokens. Must be a strong secret."
+    },
+    {
+      "label": "Anon Key",
+      "name": "ANON_KEY",
+      "defaultValue": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzcwNDAxNDk5LCJleHAiOjE5MjgwODE0OTl9.KXpYNYy4oXl5AwBwqI_RNOeG9Pcln-D6QgTrQa1sim4",
+      "required": true,
+      "type": "password",
+      "description": "The public anonymous key for client-side API access."
+    },
+    {
+      "label": "Service Role Key",
+      "name": "SERVICE_ROLE_KEY",
+      "defaultValue": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NzA0MDE0OTksImV4cCI6MTkyODA4MTQ5OX0.dtGqIxXkR3mgg2uM0yLN4gEJNi_HIAztbFiFJIoJsNg",
+      "required": true,
+      "type": "password",
+      "description": "The private service role key. Bypasses RLS. Keep secret."
+    },
+    {
+      "label": "Secret Key Base",
+      "name": "SECRET_KEY_BASE",
+      "defaultValue": "QLxKsvg2ts8Q544x3ggfCPyDnHcMZLm2sVoVpKYR7nqcbBE8TIbMERpmAsKa3HKg",
+      "required": true,
+      "type": "password",
+      "description": "Secret for encryption of Realtime secrets."
+    },
+    {
+      "label": "Vault Encryption Key",
+      "name": "VAULT_ENC_KEY",
+      "defaultValue": "84cc652cbb006c59382b24c95d5322cc",
+      "required": true,
+      "type": "password",
+      "description": "Key used for Vault data encryption."
+    },
+    {
+      "label": "PG Meta Crypto Key",
+      "name": "PG_META_CRYPTO_KEY",
+      "defaultValue": "IznnBELGEwb4/wa14Prog6e7oGpfP84j",
+      "required": true,
+      "type": "password",
+      "description": "Key used to encrypt credentials in pg-meta."
+    },
+    {
+      "label": "PostgreSQL Password",
+      "name": "POSTGRES_PASSWORD",
+      "defaultValue": "ffff0c17fbb6a2e0829a54a97ad14422",
+      "required": true,
+      "type": "password",
+      "description": "Password for the Postgres database user."
+    },
+    {
+      "label": "Supabase Public URL",
+      "name": "SUPABASE_PUBLIC_URL",
+      "defaultValue": "http://localhost:8000",
+      "required": true,
+      "description": "The public URL where Supabase services are accessible."
+    },
+    {
+      "label": "API External URL",
+      "name": "API_EXTERNAL_URL",
+      "defaultValue": "http://localhost:8000",
+      "required": true,
+      "description": "The URL used by external services to reach the API."
+    },
+    {
+      "label": "Site URL",
+      "name": "SITE_URL",
+      "defaultValue": "http://localhost:3000",
+      "required": true,
+      "description": "The URL of your frontend application."
+    },
+    {
+      "label": "Supabase Dashboard User",
+      "name": "DASHBOARD_USERNAME",
+      "defaultValue": "supabase",
+      "required": true,
+      "description": "Username for accessing the Supabase Studio dashboard."
+    },
+    {
+      "label": "Supabase Dashboard Password",
+      "name": "DASHBOARD_PASSWORD",
+      "defaultValue": "1fef7c62688f04ec088afb5417d77992",
+      "required": true,
+      "type": "password",
+      "description": "Password for accessing the Supabase Studio dashboard."
+    },
+    {
+      "label": "PostgreSQL Host",
+      "name": "POSTGRES_HOST",
+      "defaultValue": "db",
+      "required": true,
+      "description": "Hostname or IP of the PostgreSQL database."
+    },
+    {
+      "label": "PostgreSQL Database Name",
+      "name": "POSTGRES_DB",
+      "defaultValue": "postgres",
+      "required": true,
+      "description": "Name of the PostgreSQL database."
+    },
+    {
+      "label": "PostgreSQL User",
+      "name": "POSTGRES_USER",
+      "defaultValue": "postgres",
+      "required": true,
+      "description": "Username for the internal Postgres database."
+    },
+    {
+      "label": "PostgreSQL Port",
+      "name": "POSTGRES_PORT",
+      "defaultValue": "5432",
+      "required": true,
+      "description": "Port number for the PostgreSQL database."
+    },
+    {
+      "label": "MinIO Admin User",
+      "name": "MINIO_ROOT_USER",
+      "defaultValue": "minioadmin",
+      "required": true,
+      "description": "Root username for MinIO storage admin."
+    },
+    {
+      "label": "MinIO Admin Password",
+      "name": "MINIO_ROOT_PASSWORD",
+      "defaultValue": "minioadmin",
+      "required": true,
+      "type": "password",
+      "description": "Root password for MinIO storage admin."
+    },
+    {
+      "label": "Disable Signup",
+      "name": "DISABLE_SIGNUP",
+      "defaultValue": "false",
+      "description": "Set to true to disable public signups."
+    },
+    {
+      "label": "Enable Email Signup",
+      "name": "ENABLE_EMAIL_SIGNUP",
+      "defaultValue": "true",
+      "description": "Enable signup via email and password."
+    },
+    {
+      "label": "Enable Email Autoconfirm",
+      "name": "ENABLE_EMAIL_AUTOCONFIRM",
+      "defaultValue": "true",
+      "description": "Automatically confirm emails without sending a verification link."
+    },
+    {
+      "label": "Enable Phone Signup",
+      "name": "ENABLE_PHONE_SIGNUP",
+      "defaultValue": "true",
+      "description": "Enable signup via phone number."
+    },
+    {
+      "label": "Enable Phone Autoconfirm",
+      "name": "ENABLE_PHONE_AUTOCONFIRM",
+      "defaultValue": "true",
+      "description": "Automatically confirm phone numbers."
+    },
+    {
+      "label": "Enable Anonymous Users",
+      "name": "ENABLE_ANONYMOUS_USERS",
+      "defaultValue": "false",
+      "description": "Allow anonymous temporary users."
+    },
+    {
+      "label": "JWT Expiry",
+      "name": "JWT_EXPIRY",
+      "defaultValue": "3600",
+      "description": "How long access tokens are valid (in seconds)."
+    },
+    {
+      "label": "Additional Redirect URLs",
+      "name": "ADDITIONAL_REDIRECT_URLS",
+      "defaultValue": "",
+      "description": "Comma-separated list of allowed redirect URLs for Auth."
+    },
+    {
+      "label": "SMTP Host",
+      "name": "SMTP_HOST",
+      "required": false,
+      "description": "Hostname for the SMTP server."
+    },
+    {
+      "label": "SMTP Port",
+      "name": "SMTP_PORT",
+      "defaultValue": "587",
+      "description": "Port for the SMTP server."
+    },
+    {
+      "label": "SMTP User",
+      "name": "SMTP_USER",
+      "required": false,
+      "description": "Username for SMTP authentication."
+    },
+    {
+      "label": "SMTP Password",
+      "name": "SMTP_PASS",
+      "required": false,
+      "type": "password",
+      "description": "Password for SMTP authentication."
+    },
+    {
+      "label": "SMTP Sender Name",
+      "name": "SMTP_SENDER_NAME",
+      "defaultValue": "Supabase",
+      "description": "Name to appear in sent emails."
+    },
+    {
+      "label": "SMTP Admin Email",
+      "name": "SMTP_ADMIN_EMAIL",
+      "defaultValue": "admin@example.com",
+      "description": "Email address for admin notifications."
+    },
+    {
+      "label": "Logflare Public Token",
+      "name": "LOGFLARE_PUBLIC_ACCESS_TOKEN",
+      "required": true,
+      "type": "password",
+      "description": "Public key for Logflare analytics."
+    },
+    {
+      "label": "Logflare Private Token",
+      "name": "LOGFLARE_PRIVATE_ACCESS_TOKEN",
+      "required": true,
+      "type": "password",
+      "description": "Private key for Logflare analytics."
+    },
+    {
+      "label": "Mailer Path: Invite",
+      "name": "MAILER_URLPATHS_INVITE",
+      "defaultValue": "/auth/v1/verify",
+      "description": "URL path for invitation emails."
+    },
+    {
+      "label": "Mailer Path: Confirmation",
+      "name": "MAILER_URLPATHS_CONFIRMATION",
+      "defaultValue": "/auth/v1/verify",
+      "description": "URL path for confirmation emails."
+    },
+    {
+      "label": "Mailer Path: Recovery",
+      "name": "MAILER_URLPATHS_RECOVERY",
+      "defaultValue": "/auth/v1/verify",
+      "description": "URL path for password recovery emails."
+    },
+    {
+      "label": "Mailer Path: Email Change",
+      "name": "MAILER_URLPATHS_EMAIL_CHANGE",
+      "defaultValue": "/auth/v1/verify",
+      "description": "URL path for email change verification."
+    },
+    {
+      "label": "Kong HTTP Port",
+      "name": "KONG_HTTP_PORT",
+      "defaultValue": "8000",
+      "required": true,
+      "description": "Port for Kong API Gateway (HTTP)."
+    },
+    {
+      "label": "Kong HTTPS Port",
+      "name": "KONG_HTTPS_PORT",
+      "defaultValue": "8443",
+      "required": true,
+      "description": "Port for Kong API Gateway (HTTPS)."
+    },
+    {
+      "label": "Docker Socket Path",
+      "name": "DOCKER_SOCKET_LOCATION",
+      "defaultValue": "/var/run/docker.sock",
+      "description": "Path to the Docker socket on the host."
+    },
+    {
+      "label": "Studio Default Organization",
+      "name": "STUDIO_DEFAULT_ORGANIZATION",
+      "defaultValue": "Default Organization",
+      "description": "Name of the default organization in Studio."
+    },
+    {
+      "label": "Studio Default Project",
+      "name": "STUDIO_DEFAULT_PROJECT",
+      "defaultValue": "Default Project",
+      "description": "Name of the default project in Studio."
+    },
+    {
+      "label": "OpenAI API Key",
+      "name": "OPENAI_API_KEY",
+      "required": false,
+      "type": "password",
+      "description": "API Key for OpenAI integration."
+    },
+    {
+      "label": "PostgREST Database Schemas",
+      "name": "PGRST_DB_SCHEMAS",
+      "defaultValue": "public,storage,graphql_public",
+      "description": "Comma-separated list of database schemas to expose."
+    },
+    {
+      "label": "ImgProxy WebP Detection",
+      "name": "IMGPROXY_ENABLE_WEBP_DETECTION",
+      "defaultValue": "true",
+      "description": "Enable WebP detection for image transformation."
+    },
+    {
+      "label": "Pooler Proxy Port Transaction",
+      "name": "POOLER_PROXY_PORT_TRANSACTION",
+      "defaultValue": "6543",
+      "description": "Port for Supavisor transaction pooler."
+    },
+    {
+      "label": "Pooler Tenant ID",
+      "name": "POOLER_TENANT_ID",
+      "defaultValue": "stub",
+      "description": "Tenant ID for the connection pooler."
+    },
+    {
+      "label": "Pooler Default Pool Size",
+      "name": "POOLER_DEFAULT_POOL_SIZE",
+      "defaultValue": "20",
+      "description": "Default pool size for the connection pooler."
+    },
+    {
+      "label": "Pooler Max Client Config",
+      "name": "POOLER_MAX_CLIENT_CONN",
+      "defaultValue": "100",
+      "description": "Maximum client connections for the pooler."
+    },
+    {
+      "label": "Pooler DB Pool Size",
+      "name": "POOLER_DB_POOL_SIZE",
+      "defaultValue": "60",
+      "description": "Database pool size for the pooler."
+    }
+  ],
+  "dockerComposeFile": "docker-compose.yml",
+  "dockerComposeFiles": [
+    "docker-compose.yml",
+    "docker-compose.s3.yml",
+    "docker-compose.coolify.yml"
+  ]
+}
