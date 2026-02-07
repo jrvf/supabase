@@ -3,86 +3,8 @@ services:
     environment:
       # Overrides the default or .env specific SUPABASE_PUBLIC_URL with Coolify's generated FQDN
       SUPABASE_PUBLIC_URL: ${SERVICE_FQDN_KONG}
-    volumes:
-      - ./volumes/snippets:/app/snippets
-      - ./volumes/functions:/app/edge-functions
 
   auth:
     environment:
       # Overrides the external URL for redirects to match the Coolify generated FQDN
       API_EXTERNAL_URL: ${SERVICE_FQDN_KONG}
-
-  vector:
-    volumes:
-      - type: bind
-        source: ./volumes/logs/vector.yml
-        target: /etc/vector/vector.yml
-        read_only: true
-      - type: bind
-        source: ${DOCKER_SOCKET_LOCATION}
-        target: /var/run/docker.sock
-        read_only: true
-        bind:
-          selinux: z
-
-
-  kong:
-    volumes:
-      - type: bind
-        source: ./volumes/api/kong.yml
-        target: /home/kong/temp.yml
-        read_only: true
-
-  storage:
-    volumes:
-      - ./volumes/storage:/var/lib/storage
-
-  imgproxy:
-    volumes:
-      - ./volumes/storage:/var/lib/storage
-
-  functions:
-    volumes:
-      - ./volumes/functions:/home/deno/functions
-
-  db:
-    volumes:
-      - type: bind
-        source: ./volumes/db/realtime.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-realtime.sql
-      - type: bind
-        source: ./volumes/db/webhooks.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
-      - type: bind
-        source: ./volumes/db/roles.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
-      - type: bind
-        source: ./volumes/db/jwt.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
-      - type: bind
-        source: ./volumes/db/_supabase.sql
-        target: /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
-      - type: bind
-        source: ./volumes/db/logs.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-logs.sql
-      - type: bind
-        source: ./volumes/db/pooler.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-pooler.sql
-      - ./volumes/db/data:/var/lib/postgresql/data
-      - db-config:/etc/postgresql-custom
-
-
-
-  supavisor:
-    volumes:
-      - type: bind
-        source: ./volumes/pooler/pooler.exs
-        target: /etc/pooler/pooler.exs
-        read_only: true
-
-  minio:
-    volumes:
-      - ./volumes/storage:/data
-
-volumes:
-  db-config:

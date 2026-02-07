@@ -50,8 +50,8 @@ services:
       SNIPPETS_MANAGEMENT_FOLDER: /app/snippets
       EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions
     volumes:
-      - ./volumes/snippets:/app/snippets
-      - ./volumes/functions:/app/edge-functions
+      - ./volumes/snippets:/app/snippets:Z
+      - ./volumes/functions:/app/edge-functions:Z
   kong:
     container_name: supabase-kong
     image: kong:2.8.1
@@ -60,10 +60,8 @@ services:
       - ${KONG_HTTP_PORT}:8000/tcp
       - ${KONG_HTTPS_PORT}:8443/tcp
     volumes:
-      - type: bind
-        source: ./volumes/api/kong.yml
-        target: /home/kong/temp.yml
-        read_only: true
+      # https://github.com/supabase/supabase/issues/12661
+      - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z
     depends_on:
       analytics:
         condition: service_healthy
@@ -210,7 +208,7 @@ services:
     image: supabase/storage-api:v1.11.13
     restart: unless-stopped
     volumes:
-      - ./volumes/storage:/var/lib/storage
+      - ./volumes/storage:/var/lib/storage:z
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
       timeout: 5s
@@ -253,7 +251,7 @@ services:
     image: darthsim/imgproxy:v3.8.0
     restart: unless-stopped
     volumes:
-      - ./volumes/storage:/var/lib/storage
+      - ./volumes/storage:/var/lib/storage:z
     healthcheck:
       test: ["CMD", "imgproxy", "health"]
       timeout: 5s
@@ -288,7 +286,7 @@ services:
     image: supabase/edge-runtime:v1.70.0
     restart: unless-stopped
     volumes:
-      - ./volumes/functions:/home/deno/functions
+      - ./volumes/functions:/home/deno/functions:Z
     depends_on:
       analytics:
         condition: service_healthy
@@ -347,28 +345,22 @@ services:
     image: supabase/postgres:15.8.1.085
     restart: unless-stopped
     volumes:
-      - type: bind
-        source: ./volumes/db/realtime.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-realtime.sql
-      - type: bind
-        source: ./volumes/db/webhooks.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
-      - type: bind
-        source: ./volumes/db/roles.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
-      - type: bind
-        source: ./volumes/db/jwt.sql
-        target: /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
-      - type: bind
-        source: ./volumes/db/_supabase.sql
-        target: /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
-      - type: bind
-        source: ./volumes/db/logs.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-logs.sql
-      - type: bind
-        source: ./volumes/db/pooler.sql
-        target: /docker-entrypoint-initdb.d/migrations/99-pooler.sql
-      - ./volumes/db/data:/var/lib/postgresql/data
+      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
+      # Must be superuser to create event trigger
+      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
+      # Must be superuser to alter reserved role
+      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
+      # Initialize the database settings with JWT_SECRET and JWT_EXP
+      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
+      # PGDATA directory is persisted between restarts
+      - ./volumes/db/data:/var/lib/postgresql/data:Z
+      # Changes required for internal supabase data such as _analytics
+      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
+      # Changes required for Analytics support
+      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
+      # Changes required for Pooler support
+      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
+      # Use named volume to persist pgsodium decryption key between restarts
       - db-config:/etc/postgresql-custom
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
@@ -395,16 +387,8 @@ services:
     image: timberio/vector:0.28.1-alpine
     restart: unless-stopped
     volumes:
-      - type: bind
-        source: ./volumes/logs/vector.yml
-        target: /etc/vector/vector.yml
-        read_only: true
-      - type: bind
-        source: ${DOCKER_SOCKET_LOCATION}
-        target: /var/run/docker.sock
-        read_only: true
-        bind:
-          selinux: z
+      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
+      - ${DOCKER_SOCKET_LOCATION}:/var/run/docker.sock:ro,z
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://vector:9001/health"]
       timeout: 5s
@@ -424,10 +408,7 @@ services:
       - ${POSTGRES_PORT}:5432
       - ${POOLER_PROXY_PORT_TRANSACTION}:6543
     volumes:
-      - type: bind
-        source: ./volumes/pooler/pooler.exs
-        target: /etc/pooler/pooler.exs
-        read_only: true
+      - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z
     healthcheck:
       test: ["CMD", "curl", "-sSfL", "--head", "-o", "/dev/null", "http://127.0.0.1:4000/api/health"]
       interval: 10s
@@ -472,7 +453,7 @@ services:
       timeout: 10s
       retries: 5
     volumes:
-      - ./volumes/storage:/data
+      - ./volumes/storage:/data:z
   minio-createbucket:
     image: minio/mc
     depends_on:
