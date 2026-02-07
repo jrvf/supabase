@@ -6,8 +6,6 @@
 #   Reset everything:  ./reset.sh
 
 name: supabase
-# docker-compose.coolify.yml
-# Usar com: docker compose -f docker-compose.prod.yml -f docker-compose.coolify.yml up -d
 services:
   studio:
     container_name: supabase-studio
@@ -34,7 +32,8 @@ services:
       DEFAULT_PROJECT_NAME: ${STUDIO_DEFAULT_PROJECT}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SUPABASE_URL: http://kong:8000
-      SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
+      # Overrides the default or .env specific SUPABASE_PUBLIC_URL with Coolify's generated FQDN
+      SUPABASE_PUBLIC_URL: ${SERVICE_FQDN_KONG}
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
       AUTH_JWT_SECRET: ${JWT_SECRET}
@@ -100,7 +99,8 @@ services:
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      API_EXTERNAL_URL: ${API_EXTERNAL_URL}
+      # Overrides the external URL for redirects to match the Coolify generated FQDN
+      API_EXTERNAL_URL: ${SERVICE_FQDN_KONG}
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       GOTRUE_SITE_URL: ${SITE_URL}
@@ -406,7 +406,7 @@ services:
         bind:
           selinux: z
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9001/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://vector:9001/health"]
       timeout: 5s
       interval: 5s
       retries: 3
