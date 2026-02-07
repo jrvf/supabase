@@ -1,5 +1,24 @@
 #!/bin/bash
 
+###############################################################################
+# merge-compose.sh
+#
+# Description:
+#   Merges multiple docker-compose YAML files into a single docker-compose.prod.yml
+#   file using yq (Mike Farah v4+). Checks for required dependencies and downloads
+#   yq if missing. Ensures all input compose files exist before merging.
+#
+# Usage:
+#   ./merge-compose.sh
+#
+# Requirements:
+#   - yq (Mike Farah v4+) and curl (auto-installs yq if missing)
+#   - All listed compose files must exist in the working directory
+#
+# Output:
+#   - docker-compose.prod.yml (merged result)
+###############################################################################
+
 COMPOSE_FILES=("docker-compose.yml" "docker-compose.s3.yml" "coolify/docker-compose.coolify.yml")
 MERGED_COMPOSE="docker-compose.prod.yml"
 
