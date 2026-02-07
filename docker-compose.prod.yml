@@ -6,6 +6,8 @@
 #   Reset everything:  ./reset.sh
 
 name: supabase
+# docker-compose.coolify.yml
+# Usar com: docker compose -f docker-compose.prod.yml -f docker-compose.coolify.yml up -d
 services:
   studio:
     container_name: supabase-studio
@@ -32,8 +34,7 @@ services:
       DEFAULT_PROJECT_NAME: ${STUDIO_DEFAULT_PROJECT}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SUPABASE_URL: http://kong:8000
-      # Overrides the default or .env specific SUPABASE_PUBLIC_URL with Coolify's generated FQDN
-      SUPABASE_PUBLIC_URL: ${SERVICE_FQDN_KONG}
+      SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
       AUTH_JWT_SECRET: ${JWT_SECRET}
@@ -50,8 +51,8 @@ services:
       SNIPPETS_MANAGEMENT_FOLDER: /app/snippets
       EDGE_FUNCTIONS_MANAGEMENT_FOLDER: /app/edge-functions
     volumes:
-      - ./volumes/snippets:/app/snippets:Z
-      - ./volumes/functions:/app/edge-functions:Z
+      - ./volumes/snippets:/app/snippets
+      - ./volumes/functions:/app/edge-functions
   kong:
     container_name: supabase-kong
     image: kong:2.8.1
@@ -60,8 +61,10 @@ services:
       - ${KONG_HTTP_PORT}:8000/tcp
       - ${KONG_HTTPS_PORT}:8443/tcp
     volumes:
-      # https://github.com/supabase/supabase/issues/12661
-      - ./volumes/api/kong.yml:/home/kong/temp.yml:ro,z
+      - type: bind
+        source: ./volumes/api/kong.yml
+        target: /home/kong/temp.yml
+        read_only: true
     depends_on:
       analytics:
         condition: service_healthy
@@ -97,8 +100,7 @@ services:
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      # Overrides the external URL for redirects to match the Coolify generated FQDN
-      API_EXTERNAL_URL: ${SERVICE_FQDN_KONG}
+      API_EXTERNAL_URL: ${API_EXTERNAL_URL}
       GOTRUE_DB_DRIVER: postgres
       GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       GOTRUE_SITE_URL: ${SITE_URL}
@@ -208,7 +210,7 @@ services:
     image: supabase/storage-api:v1.11.13
     restart: unless-stopped
     volumes:
-      - ./volumes/storage:/var/lib/storage:z
+      - ./volumes/storage:/var/lib/storage
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
       timeout: 5s
@@ -251,7 +253,7 @@ services:
     image: darthsim/imgproxy:v3.8.0
     restart: unless-stopped
     volumes:
-      - ./volumes/storage:/var/lib/storage:z
+      - ./volumes/storage:/var/lib/storage
     healthcheck:
       test: ["CMD", "imgproxy", "health"]
       timeout: 5s
@@ -286,7 +288,7 @@ services:
     image: supabase/edge-runtime:v1.70.0
     restart: unless-stopped
     volumes:
-      - ./volumes/functions:/home/deno/functions:Z
+      - ./volumes/functions:/home/deno/functions
     depends_on:
       analytics:
         condition: service_healthy
@@ -345,22 +347,28 @@ services:
     image: supabase/postgres:15.8.1.085
     restart: unless-stopped
     volumes:
-      - ./volumes/db/realtime.sql:/docker-entrypoint-initdb.d/migrations/99-realtime.sql:Z
-      # Must be superuser to create event trigger
-      - ./volumes/db/webhooks.sql:/docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql:Z
-      # Must be superuser to alter reserved role
-      - ./volumes/db/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:Z
-      # Initialize the database settings with JWT_SECRET and JWT_EXP
-      - ./volumes/db/jwt.sql:/docker-entrypoint-initdb.d/init-scripts/99-jwt.sql:Z
-      # PGDATA directory is persisted between restarts
-      - ./volumes/db/data:/var/lib/postgresql/data:Z
-      # Changes required for internal supabase data such as _analytics
-      - ./volumes/db/_supabase.sql:/docker-entrypoint-initdb.d/migrations/97-_supabase.sql:Z
-      # Changes required for Analytics support
-      - ./volumes/db/logs.sql:/docker-entrypoint-initdb.d/migrations/99-logs.sql:Z
-      # Changes required for Pooler support
-      - ./volumes/db/pooler.sql:/docker-entrypoint-initdb.d/migrations/99-pooler.sql:Z
-      # Use named volume to persist pgsodium decryption key between restarts
+      - type: bind
+        source: ./volumes/db/realtime.sql
+        target: /docker-entrypoint-initdb.d/migrations/99-realtime.sql
+      - type: bind
+        source: ./volumes/db/webhooks.sql
+        target: /docker-entrypoint-initdb.d/init-scripts/98-webhooks.sql
+      - type: bind
+        source: ./volumes/db/roles.sql
+        target: /docker-entrypoint-initdb.d/init-scripts/99-roles.sql
+      - type: bind
+        source: ./volumes/db/jwt.sql
+        target: /docker-entrypoint-initdb.d/init-scripts/99-jwt.sql
+      - type: bind
+        source: ./volumes/db/_supabase.sql
+        target: /docker-entrypoint-initdb.d/migrations/97-_supabase.sql
+      - type: bind
+        source: ./volumes/db/logs.sql
+        target: /docker-entrypoint-initdb.d/migrations/99-logs.sql
+      - type: bind
+        source: ./volumes/db/pooler.sql
+        target: /docker-entrypoint-initdb.d/migrations/99-pooler.sql
+      - ./volumes/db/data:/var/lib/postgresql/data
       - db-config:/etc/postgresql-custom
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
@@ -387,8 +395,16 @@ services:
     image: timberio/vector:0.28.1-alpine
     restart: unless-stopped
     volumes:
-      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
-      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+      - type: bind
+        source: ./volumes/logs/vector.yml
+        target: /etc/vector/vector.yml
+        read_only: true
+      - type: bind
+        source: ${DOCKER_SOCKET_LOCATION}
+        target: /var/run/docker.sock
+        read_only: true
+        bind:
+          selinux: z
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9001/health"]
       timeout: 5s
@@ -408,7 +424,10 @@ services:
       - ${POSTGRES_PORT}:5432
       - ${POOLER_PROXY_PORT_TRANSACTION}:6543
     volumes:
-      - ./volumes/pooler/pooler.exs:/etc/pooler/pooler.exs:ro,z
+      - type: bind
+        source: ./volumes/pooler/pooler.exs
+        target: /etc/pooler/pooler.exs
+        read_only: true
     healthcheck:
       test: ["CMD", "curl", "-sSfL", "--head", "-o", "/dev/null", "http://127.0.0.1:4000/api/health"]
       interval: 10s
@@ -453,7 +472,7 @@ services:
       timeout: 10s
       retries: 5
     volumes:
-      - ./volumes/storage:/data:z
+      - ./volumes/storage:/data
   minio-createbucket:
     image: minio/mc
     depends_on:
