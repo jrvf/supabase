@@ -7,6 +7,7 @@
 #   Generates a new .env.coolify file based on .env.example, replacing all
 #   secret values with newly generated secure values. Outputs the generated
 #   secrets to stdout for reference.
+#   Adds Coolify-specific static environment variables at the top of the output.
 #
 # Usage:
 #   ./generate-env.sh
@@ -103,22 +104,49 @@ print_secrets() {
     echo ""
 }
 
+generate_coolify_env() {
+    # Outputs Coolify-specific environment variables and sets replacements
+    echo "############"
+    echo "# Coolify Specific"
+    echo "############"
+    echo ""
+    local fqdn="${SERVICE_FQDN_KONG:-kong.mydomain.com}"
+    local url="https://${fqdn}"
+    export COOLIFY_FQDN="$fqdn"
+    export COOLIFY_URL="$url"
+    echo "SERVICE_FQDN_KONG=${fqdn}"
+    echo "SERVICE_URL_KONG=${url}"
+    echo ""
+}
+
+replace_coolify_vars() {
+    # Replace Coolify-specific variables in the env stream (read from stdin)
+    sed \
+        -e 's|^API_EXTERNAL_URL=.*$|API_EXTERNAL_URL=${SERVICE_URL_KONG}:8000|' \
+        -e 's|^SUPABASE_PUBLIC_URL=.*$|SUPABASE_PUBLIC_URL=${SERVICE_URL_KONG}:8000|'
+}
+
 replace_env_secrets() {
     # Replace secrets in ENV_EXAMPLE and write to ENV_COOLIFY
-    sed \
-        -e "s|^JWT_SECRET=.*$|JWT_SECRET=${jwt_secret}|" \
-        -e "s|^ANON_KEY=.*$|ANON_KEY=${anon_key}|" \
-        -e "s|^SERVICE_ROLE_KEY=.*$|SERVICE_ROLE_KEY=${service_role_key}|" \
-        -e "s|^SECRET_KEY_BASE=.*$|SECRET_KEY_BASE=${secret_key_base}|" \
-        -e "s|^VAULT_ENC_KEY=.*$|VAULT_ENC_KEY=${vault_enc_key}|" \
-        -e "s|^PG_META_CRYPTO_KEY=.*$|PG_META_CRYPTO_KEY=${pg_meta_crypto_key}|" \
-        -e "s|^LOGFLARE_PUBLIC_ACCESS_TOKEN=.*$|LOGFLARE_PUBLIC_ACCESS_TOKEN=${logflare_public_access_token}|" \
-        -e "s|^LOGFLARE_PRIVATE_ACCESS_TOKEN=.*$|LOGFLARE_PRIVATE_ACCESS_TOKEN=${logflare_private_access_token}|" \
-        -e "s|^S3_PROTOCOL_ACCESS_KEY_ID=.*$|S3_PROTOCOL_ACCESS_KEY_ID=${s3_protocol_access_key_id}|" \
-        -e "s|^S3_PROTOCOL_ACCESS_KEY_SECRET=.*$|S3_PROTOCOL_ACCESS_KEY_SECRET=${s3_protocol_access_key_secret}|" \
-        -e "s|^POSTGRES_PASSWORD=.*$|POSTGRES_PASSWORD=${postgres_password}|" \
-        -e "s|^DASHBOARD_PASSWORD=.*$|DASHBOARD_PASSWORD=${dashboard_password}|" \
-        "$ENV_EXAMPLE" > "$ENV_COOLIFY"
+    {
+        generate_coolify_env
+        # Replace secrets first, then pipe to replace_coolify_vars (which reads from stdin)
+        sed \
+            -e "s|^JWT_SECRET=.*$|JWT_SECRET=${jwt_secret}|" \
+            -e "s|^ANON_KEY=.*$|ANON_KEY=${anon_key}|" \
+            -e "s|^SERVICE_ROLE_KEY=.*$|SERVICE_ROLE_KEY=${service_role_key}|" \
+            -e "s|^SECRET_KEY_BASE=.*$|SECRET_KEY_BASE=${secret_key_base}|" \
+            -e "s|^VAULT_ENC_KEY=.*$|VAULT_ENC_KEY=${vault_enc_key}|" \
+            -e "s|^PG_META_CRYPTO_KEY=.*$|PG_META_CRYPTO_KEY=${pg_meta_crypto_key}|" \
+            -e "s|^LOGFLARE_PUBLIC_ACCESS_TOKEN=.*$|LOGFLARE_PUBLIC_ACCESS_TOKEN=${logflare_public_access_token}|" \
+            -e "s|^LOGFLARE_PRIVATE_ACCESS_TOKEN=.*$|LOGFLARE_PRIVATE_ACCESS_TOKEN=${logflare_private_access_token}|" \
+            -e "s|^S3_PROTOCOL_ACCESS_KEY_ID=.*$|S3_PROTOCOL_ACCESS_KEY_ID=${s3_protocol_access_key_id}|" \
+            -e "s|^S3_PROTOCOL_ACCESS_KEY_SECRET=.*$|S3_PROTOCOL_ACCESS_KEY_SECRET=${s3_protocol_access_key_secret}|" \
+            -e "s|^POSTGRES_PASSWORD=.*$|POSTGRES_PASSWORD=${postgres_password}|" \
+            -e "s|^DASHBOARD_PASSWORD=.*$|DASHBOARD_PASSWORD=${dashboard_password}|" \
+            "$ENV_EXAMPLE" \
+        | replace_coolify_vars
+    } > "$ENV_COOLIFY"
 }
 
 main() {
@@ -129,6 +157,13 @@ main() {
     require_openssl
     generate_secrets
     print_secrets
+
+    # Ensure ENV_EXAMPLE exists before proceeding
+    if [ ! -f "$ENV_EXAMPLE" ]; then
+        echo "Error: $ENV_EXAMPLE not found in current directory: $(pwd)"
+        exit 1
+    fi
+
     replace_env_secrets
 
     echo "Generated $ENV_COOLIFY with new secrets."

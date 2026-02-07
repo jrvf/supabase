@@ -8,3 +8,7 @@ services:
     environment:
       # Overrides the external URL for redirects to match the Coolify generated FQDN
       API_EXTERNAL_URL: ${SERVICE_FQDN_KONG}
+
+  vector:
+    volumes:
+      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro,z
